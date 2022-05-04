@@ -1,18 +1,82 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block content %}
 
-<div style="background-color:#ffffff;">
-    <div class="row">
-        <div class="col-lg-5" style="margin: auto;">
-            <h1 class="text-center" style="color:#1DA1F2;"><b>Dashboard</b></h1>
-            <div ><img src="{% url 'facecam_feed' %}" width="800" height="550"></div>
-        </div>
+<div style="background-color: #ffffff">
+  <div class="row">
+    <div class="col-lg-5" style="margin: auto">
+      <h1 class="text-center" style="color: #1da1f2"><b>Dashboard</b></h1>
+      <center>
+        <button
+          onclick="startFeed()"
+          style="background-color: #1af030"
+          id="startFeedButton"
+        >
+          Start feed
+        </button>
+        <button
+          onclick="stopFeed()"
+          style="display: none; background-color: #ff4040"
+          id="stopFeedButton"
+        >
+          Stop feed
+        </button>
+      </br> 
+
+        <div id="imageDiv"></div>
+      </center>
     </div>
-    
+  </div>
 </div>
 
-<span>Hello , {{request.user }} </span>
+<div>Hello , {{request.user }}</div>
 <span><a href="{% url 'logout' %}">Logout</a></span>
 
+<script
+  src="https://code.jquery.com/jquery-3.6.0.js"
+  integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+  crossorigin="anonymous"
+></script>
+<script>
+  window.onbeforeunload = function(e) {
+    $.ajax({
+      type: "POST",
+      url:'{% url 'stopFeed' %}',
+      data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+      success:  function(response){
+
+         }
+  });
+    };
+
+  function startFeed(){
+
+    document.getElementById("imageDiv").innerHTML='<img src="{% url 'facecam_feed' %}" alt="There was some error turning on your live feed please try refreshing this page" />';
+    document.getElementById("startFeedButton").style.display = "none";
+    document.getElementById("stopFeedButton").style.display = "block";
+    const myt=setTimeout( function() {
+     recommendSong();
+  }, 10000 );
+  }
+
+  function stopFeed(){
+    $.ajax({
+      type: 'POST',
+      data:  {csrfmiddlewaretoken: '{{ csrf_token }}'},
+      url: '{% url 'stopFeed' %}',
+      success: function(){
+        window.location.reload();
+      }
+  });
+  }
+  function recommendSong(){
+    $.ajax({
+      type: 'POST',
+      data:  {csrfmiddlewaretoken: '{{ csrf_token }}'},
+      url: '{% url 'recommendSongs' %}',
+      success: function(){
+        window.location.href='{% url 'recommendSongs' %}';
+      }
+  });
+  }
+
+</script>
 {% endblock %}

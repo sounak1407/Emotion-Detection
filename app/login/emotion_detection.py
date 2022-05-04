@@ -1,85 +1,70 @@
-from imutils.video import VideoStream, FPS
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from unicodedata import name
+from imutils.video import WebcamVideoStream, FPS
 import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
-from torch.autograd import Variable
-from torch.optim import Adam
-from torchvision.transforms import transforms
-from torch.utils.data import DataLoader
 from PIL import Image
-from login.Model import Net
 from auth.settings import BASE_DIR
 from sys import platform
+import dlib
+from tensorflow import keras
+from keras import optimizers, regularizers
+from keras import layers, models
+from .models  import UsersMood
 
-class Emotion_detection():
-    def __init__(self):
-        self.vs = VideoStream(src=0).start()
+
+
+class Emotion_detection(object):
+    def __init__(self,name):
+        self.vs = WebcamVideoStream(src=0).start()
         self.fps = FPS().start()
+        self.detector = dlib.get_frontal_face_detector()
+        self.predictor = dlib.shape_predictor(str(BASE_DIR / 'shape_predictor_68_face_landmarks.dat'))
+        self.model = keras.models.load_model('my_model.h5')
+        self.list_categories = ['anger', 'disgust', 'fear', 'happy', 'sadness', 'surprise']
+        self.score=[0,0,0,0,0,0]
+        self.name=name
 
     def __del__(self):
         cv2.destroyAllWindows()
+        self.vs.stream.release()
 
     def get_frame(self):
-        model_load = Net()
-        model_load.load_state_dict(torch.load(
-            BASE_DIR / 'best_checkpoint.model', map_location=torch.device('cpu')))
-        model_load.eval()
-
-        if platform == "linux":    
-            cascPath = os.path.dirname(cv2.__file__) + "/data/haarcascade_frontalface_alt2.xml"
-        else:
-            cascPath = os.path.dirname(cv2.__file__) + "\\data\\haarcascade_frontalface_alt2.xml"
-        print("CascPath ", cascPath)
-        faceCascade = cv2.CascadeClassifier(cascPath)
 
         frame = self.vs.read()
-        frame = cv2.flip(frame, 1)
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = faceCascade.detectMultiScale(gray,
-                                             scaleFactor=1.1,
-                                             minNeighbors=5,
-                                             minSize=(60, 60),
-                                             flags=cv2.CASCADE_SCALE_IMAGE)
+        
+        faces = self.detector(frame)
+        try:
+            if len(faces)!= 0:
+                for face in faces:
+                    x1 = face.left()
+                    y1 = face.top()
+                    x2 = face.right()
+                    y2 = face.bottom()
+                    img_f = frame[y1:y2,x1:x2]
 
-        face_detected = 0
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            face_detected = 1
-            # Display the resulting frame
-        moods = ["angry", "disgusted", "fearful",
-                 "happy", "neutral", "sad", "surprised"]
-    #     cv2.imshow('Video', frame)
 
-        if face_detected == 1:
-            roi = frame[y:y+h, x:x+w]
-            # cv2.imshow('Face', roi)
-        else:
-            roi = frame
-        key = cv2.waitKey(5) & 0xFF
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        gray = cv2.resize(gray, (48, 48))
-    #     gray.resize(48, 48)
-        gray1 = gray.copy()
-        gray_np = np.array([[gray]])
-    #     gray = gray.resize((48, 48))
-        final_image = Variable(torch.Tensor(gray_np))
+                img = cv2.resize(img_f, (48, 48))
+                img = img.reshape(1, 48, 48, 3)
+                prediction_result = self.model(img)[0]
+                
+                index=np.argmax(prediction_result)
+                self.score[index]+=1
+                
+                Cmood=self.list_categories[
+                    self.score.index(
+                        max(self.score))]
+                UsersMood.objects.update_or_create(username=self.name,defaults={"mood":Cmood})
+                
+                cv2.rectangle(frame, (x1, y1), (x2 , y2),(0,255,0), 2)
+                cv2.putText(frame,self.list_categories[index],(10, 120), cv2.FONT_HERSHEY_PLAIN, 1, (255,255,255), 1)
+        except:
+            return None
 
-        image, grayimg = final_image, gray1
-
-        output = model_load(image)
-
-        cv2.putText(frame, moods[int(str(torch.max(output.data, 1))[-4])],
-                    (10, 120), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
-        # cv2.imshow('Video', frame)
-        # cv2.imshow('Grayscale', grayimg)
-    #     print(str(torch.max(output.data, 1)))
-        output = torch.max(output.data, 1)
         self.fps.update()
-
         ret, jpeg = cv2.imencode('.jpg', frame)
         return jpeg.tobytes()

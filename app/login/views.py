@@ -1,20 +1,35 @@
+import imp
 from django.shortcuts import render,redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+import pandas as pd
+from auth.settings import BASE_DIR
+from login.models import UsersMood
 from .forms import CreateUserForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import StreamingHttpResponse
 from login.emotion_detection import Emotion_detection
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from thought_feed import views
 # Create your views here.
- 
+
+
 def indexView(request):
-    return render(request,'home.html')
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    else:
+        return render(request,'home.html')
 
 def aboutView(request):
     return render(request,'aboutus.html') 
+
+@login_required(login_url='login_url') 
+def thoughtFeed(request):
+    return views.index(request)
+
 
 @login_required(login_url='login_url')  
 def dashboardView(request):
@@ -38,7 +53,9 @@ def registerView(request):
 
         context = {'form' :form}
         return render(request,'register.html',context) 
-    
+
+
+
 def loginView(request): 
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -65,22 +82,48 @@ def logoutView(request):
 
 
 global a
-b=True
+
 
 def facecam_feed(request):
     try:
         global a
-        a=Emotion_detection()
-        x=gen(a)
+        a=Emotion_detection(request.user)
+
         return StreamingHttpResponse(gen(a), content_type="multipart/x-mixed-replace;boundary=frame")
     except: 
         pass
 
+
+
 def gen(camera):
-    global b
-    b=True
-    while b:
+ 
+    
+    while True:
         frame = camera.get_frame()
+        
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
               
+def stopFeed(request):
+    global a
+    a.vs.stream.release()
+    return render(request,'dashboard.html')
+
+def recSongs(request):
+    songs=[]
+    url=[]
+    num=[]
+    usrMood=UsersMood.objects.get(username=request.user).mood
+    userMoodFile="data/"+usrMood+".pkl" 
+    print("USER'S MOOD IS "+usrMood)
+    numb=1
+    pklFile=str(BASE_DIR / userMoodFile)
+    df=pd.read_pickle(pklFile)
+    for i in df.sample(5).index:
+        songs.append(df["name"][i])
+        url.append(df["url"][i])
+        num.append(numb)
+        numb+=1
+    zipped=zip(songs,url)
+    return render(request,'recommendedSongs.html',{"songs":zipped,"num":num})

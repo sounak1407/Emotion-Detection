@@ -10,7 +10,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="C:\Users\Dharmesh\Downloads\projects-20210424T054957Z-001\projects\miniproject\accounts\static\accounts\bootstrap-4.0.0-dist\css\bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="C:\Users\Dharmesh\Downloads\projects-20210424T054957Z-001\projects\miniproject\accounts\static\accounts\bootstrap-4.0.0-dist\css\bootstrap.min.css"> -->
         
 
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
@@ -39,11 +39,12 @@
                 {% if user.is_authenticated %}    
                 <a class="nav-item nav-link" href="{% url 'dashboard' %}">Dashboard</a>            
                 <a class="nav-item nav-link" href="{% url 'about' %}">About</a>
+                <a class="nav-item nav-link" href="{% url 'thought' %}">Thought-feed</a>
                 {% else %}
                 <a class="nav-item nav-link" href="{% url 'home' %}">Home</a>
                 <a class="nav-item nav-link" href="{% url 'about' %}">About</a>
                 {% endif %}
-                <a class="nav-item nav-link" href="{% url 'test' %}">Test</a>
+               
               </div>
               <!-- Navbar Right Side -->
               <div class="navbar-nav">
@@ -76,11 +77,12 @@
                           {% if user.is_authenticated %}                
                             <li><ion-icon name="arrow-forward-outline"></ion-icon><span><a href="{% url 'dashboard' %}">Dashboard</a></span></li>
                             <li><ion-icon name="arrow-forward-outline"></ion-icon><span><a href="{% url 'about' %}">About Us</a></span></li> 
+                            <li><ion-icon name="arrow-forward-outline"></ion-icon><span><a href="{% url 'thought' %}">thought-feed</a></span></li>
                           {% else %}
                             <li><ion-icon name="arrow-forward-outline"></ion-icon><span><a href="{% url 'home' %}">Home</a></span></li>
                             <li><ion-icon name="arrow-forward-outline"></ion-icon><span><a href="{% url 'about' %}">About Us</a></span></li>     
                           {% endif %}
-                          <li><ion-icon name="arrow-forward-outline"></ion-icon><span><a href="{% url 'test' %}">Test</a></span></li>
+                       
                         </ul>
                     </div>
                 </div>
@@ -88,8 +90,8 @@
                     <div class="contactus">
                         <h4 class="footer-head">Contact Us</h4>
                         <ul class='contact-list'>
-                            <li><ion-icon name="mail-open-outline"></ion-icon><span><a href="https://mail.google.com/mail/?view=cm&fs=1&to=edudlm@gmail.com&body=Hey Team EDUDLM!">edudlm@gmail.com</a></span></li>
-                            <li><ion-icon name="logo-whatsapp"></ion-icon><span><a href="https://api.whatsapp.com/send?phone=918452093447">8452093447</a></span></li>
+                            <li><ion-icon name="mail-open-outline"></ion-icon><span><a href="https://mail.google.com/mail/?view=cm&fs=1&to=rajat.c@somaiya.edu&body=Hey Team EDUDLM!">rajat.c@somaiya.edu</a></span></li>
+                            <li><ion-icon name="logo-whatsapp"></ion-icon><span><a href="https://api.whatsapp.com/send?phone=919136174082">+91 9136174082</a></span></li>
                         </ul>
                     </div>
                 </div>
@@ -112,7 +114,7 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
