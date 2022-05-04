@@ -1,0 +1,35 @@
+button.likebutton {
+  background: none;
+  border: none;
+}
+.user {
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--twitter-background);
+  padding-bottom: 3px;
+}
+
+.user__body {
+  flex: 1;
+  padding: 4px;
+}
+
+.user__headerText > h3 {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.user__badge {
+  font-size: 12px !important;
+  color: var(--twitter-color);
+}
+
+.user__headerSpecial {
+  font-weight: 500;
+  font-size: 9px;
+  color: gray;
+}
+
+.user__avatar {
+  padding: 15px;
+}
